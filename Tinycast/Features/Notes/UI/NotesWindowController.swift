@@ -198,7 +198,9 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
             "p": { [weak coordinator] in coordinator?.searchNotes() },
             "o": { [weak coordinator] in coordinator?.openNotesFolder() },
             "f": { [weak self] in self?.editor?.find(.showFindInterface) },
-            "w": { [weak panel] in panel?.performClose(nil) }
+            "w": { [weak panel] in panel?.performClose(nil) },
+            "[": { [weak coordinator] in coordinator?.selectAdjacentNote(by: -1) },
+            "]": { [weak coordinator] in coordinator?.selectAdjacentNote(by: 1) }
         ]
         panel.optionCommandChords = [
             "t": { [weak coordinator] in coordinator?.toggleFormattingBar() }
