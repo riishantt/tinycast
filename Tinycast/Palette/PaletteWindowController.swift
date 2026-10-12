@@ -456,6 +456,13 @@ final class PaletteWindowController: NSObject, NSWindowDelegate {
             case "w":
                 self.core.paletteCoordinator.hidePalette()
                 return true
+            // Chat History is newest first, so going back in time is a step down the list.
+            case "[" where self.core.palette.mode == .ai:
+                self.core.quickAICoordinator.openAdjacentChat(step: 1)
+                return true
+            case "]" where self.core.palette.mode == .ai:
+                self.core.quickAICoordinator.openAdjacentChat(step: -1)
+                return true
             default:
                 return false
             }
