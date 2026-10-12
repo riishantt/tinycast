@@ -203,6 +203,15 @@ final class NotesCoordinator {
         switcherSelection = notes[(index + offset + notes.count) % notes.count].id
     }
 
+    /// ⌘[ / ⌘] walk the whole collection in the switcher's order, stopping at either end.
+    func selectAdjacentNote(by offset: Int) {
+        let notes = store.summaries
+        let current = notes.firstIndex { $0.id == store.activeID }
+        let index = current.map { $0 + offset } ?? 0
+        guard notes.indices.contains(index) else { return }
+        select(notes[index].id)
+    }
+
     func selectSwitcherNote() {
         guard let switcherSelection else { return }
         select(switcherSelection)
