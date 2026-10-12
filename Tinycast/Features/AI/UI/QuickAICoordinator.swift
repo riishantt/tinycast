@@ -114,6 +114,17 @@ final class QuickAICoordinator {
         palette.replace(mode: .ai)
     }
 
+    /// ⌘[ / ⌘] in Chat History's order, stopping at either end; a new chat sits above the newest.
+    func openAdjacentChat(step: Int) {
+        guard !chat.isStreaming else { return }
+        let ids = core.chatHistory.conversations.map(\.id).filter {
+            chats.holder(of: $0) == nil || chat.holds($0)
+        }
+        let index = ids.firstIndex(of: chat.session.id).map { $0 + step } ?? (step > 0 ? 0 : -1)
+        guard ids.indices.contains(index) else { return }
+        chats.openInQuickAI(id: ids[index])
+    }
+
     /// Chat History's ⌘J: a saved chat opens in the window, taken over from Quick AI if it is there.
     func continueInChat(id: UUID) {
         paletteCoordinator.hidePalette(restoreFocus: false)
