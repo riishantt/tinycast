@@ -1,0 +1,121 @@
+name: Custom build
+
+# Personal fork only: builds the `custom` branch into a signed Tinycast.app that
+# ~/.claude/skills/tinycast-update downloads and installs. Not part of upstream.
+on:
+  push:
+    branches: [custom]
+  workflow_dispatch:
+
+concurrency:
+  group: custom-build
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.repository == 'riishantt/tinycast'
+    runs-on: xcode-27
+    steps:
+      # Full history, so the latest upstream tag is reachable for the version number.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Version from the latest upstream stable tag
+        id: meta
+        run: |
+          git fetch --quiet --tags https://github.com/abue-ammar/tinycast.git
+          VERSION="$(git tag --merged HEAD --list 'v*' --sort=-v:refname | grep -v -- '-beta' | head -1 | sed 's/^v//')"
+          echo "version=${VERSION:-0.0.0}" >> "$GITHUB_OUTPUT"
+          echo "Building Tinycast ${VERSION:-0.0.0} (build ${GITHUB_RUN_NUMBER})"
+
+      - name: Select Xcode 27
+        run: |
+          # Real folders only: an image's Xcode_27.N.app symlink can point at a release candidate.
+          XCODE_PATH="$(find -E /Applications -maxdepth 1 -type d -regex '.*/Xcode_27(\.[0-9]+)*\.app' | sort -V | tail -n1)"
+          if [ -z "$XCODE_PATH" ]; then
+            echo "::error::No released Xcode 27.x found on this runner. Installed Xcodes:"
+            ls /Applications | grep -i xcode || true
+            exit 1
+          fi
+          echo "Using $XCODE_PATH"
+          echo "DEVELOPER_DIR=$XCODE_PATH/Contents/Developer" >> "$GITHUB_ENV"
+
+      - name: Import signing certificate
+        env:
+          P12_BASE64: ${{ secrets.SIGNING_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.SIGNING_P12_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KPW="$(openssl rand -base64 24)"
+          echo "${P12_BASE64}" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KPW" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KPW" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "${P12_PASSWORD}" -A -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KPW" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | sed 's/"//g')
+          rm -f "$RUNNER_TEMP/cert.p12"
+
+      # Upstream has no CI; these harnesses measure rendered pixels, which a headless runner can't do.
+      - name: Run test harnesses
+        env:
+          HEADLESS_ONLY: form-input-test clipboard-text-test
+        run: |
+          set +e
+          ./Scripts/run-tests.sh 2>&1 | tee "$RUNNER_TEMP/tests.log"
+          [ "${PIPESTATUS[0]}" = 0 ] && exit 0
+          failed="$(sed -n 's/.*harness(es) failed in [0-9]*s: //p' "$RUNNER_TEMP/tests.log" | tr ' ' '\n' | sed '/^$/d')"
+          [ -n "$failed" ] || { echo "::error::test runner failed without naming a harness"; exit 1; }
+          unexpected="$(echo "$failed" | grep -vxF -f <(echo "$HEADLESS_ONLY" | tr ' ' '\n'))"
+          # A shared virtual runner can starve a timing test, so each other failure gets one rerun alone.
+          still=""
+          for name in $unexpected; do
+            echo "::group::retrying $name"
+            ./Scripts/run-tests.sh "$name"
+            rc=$?
+            echo "::endgroup::"
+            if [ "$rc" = 0 ]; then
+              echo "::warning::$name failed once, then passed on retry"
+            else
+              still="$still $name"
+            fi
+          done
+          if [ -n "$still" ]; then
+            echo "::error::failing harnesses:$still"
+            exit 1
+          fi
+          echo "::warning::only headless-only or flaky harnesses failed: $(echo $failed)"
+
+      - name: Build app
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          xcodebuild -project Tinycast.xcodeproj -scheme Tinycast -configuration Release \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="Tinycast Self-Signed" \
+            OTHER_CODE_SIGN_FLAGS="--timestamp=none" \
+            PRODUCT_NAME="Tinycast" TINYCAST_BUNDLE_IDENTIFIER="com.tinycast.app" \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            build
+
+      - name: Verify signature
+        run: ./Scripts/verify-signature.sh "$RUNNER_TEMP/DerivedData/Build/Products/Release/Tinycast.app"
+
+      # `ditto` is the only zip that keeps the code signature verifiable.
+      - name: Package
+        run: |
+          mkdir -p dist
+          ditto -c -k --keepParent --sequesterRsrc \
+            "$RUNNER_TEMP/DerivedData/Build/Products/Release/Tinycast.app" dist/Tinycast.zip
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Tinycast-custom
+          path: dist/Tinycast.zip
+          retention-days: 7
+          if-no-files-found: error
