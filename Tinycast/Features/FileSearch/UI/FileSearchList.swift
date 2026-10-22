@@ -63,6 +63,9 @@ struct FileSearchRow: View {
     @State private var image: NSImage?
     @State private var hovered = false
 
+    private static let modifiedFormat: Date.FormatStyle = .dateTime.day().month(.abbreviated).year()
+        .hour().minute()
+
     init(result: FileSearchResult, selected: Bool, showsLocation: Bool = false) {
         self.result = result
         self.selected = selected
@@ -109,6 +112,13 @@ struct FileSearchRow: View {
                     .truncationMode(.middle)
             }
             Spacer(minLength: 0)
+            if showsLocation, let modified = result.modified {
+                Text(modified, format: Self.modifiedFormat)
+                    .font(metrics.typography.rowTrailing)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
+                    .fixedSize()
+            }
             if showsLocation {
                 Text(result.isDirectory ? "Folder" : "File")
                     .font(metrics.typography.rowTrailing)

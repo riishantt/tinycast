@@ -14,7 +14,7 @@ struct FileSearchTests {
     }
 
     static func result(_ path: String, folder: Bool = false) -> FileSearchResult {
-        FileSearchResult(url: home.appending(path: path), isDirectory: folder, homeDirectory: home)
+        FileSearchResult(url: home.appending(path: path), isDirectory: folder, mtime: 0, homeDirectory: home)
     }
 
     static func score(_ query: String, _ name: String, prior: Int8 = 2) -> Int? {
