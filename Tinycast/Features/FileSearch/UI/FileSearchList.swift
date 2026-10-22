@@ -64,6 +64,9 @@ struct FileSearchRow: View {
     @State private var image: NSImage?
     @State private var hovered = false
 
+    private static let modifiedFormat: Date.FormatStyle = .dateTime.day().month(.abbreviated).year()
+        .hour().minute()
+
     init(
         result: FileSearchResult, selected: Bool, showsLocation: Bool = false, slot: Character? = nil
     ) {
@@ -115,9 +118,18 @@ struct FileSearchRow: View {
             Spacer(minLength: 0)
             SlotChordReveal(slot: slot) {
                 if showsLocation {
-                    Text(result.isDirectory ? "Folder" : "File")
-                        .font(metrics.typography.rowTrailing)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: metrics.spacing.lg) {
+                        if let modified = result.modified {
+                            Text(modified, format: Self.modifiedFormat)
+                                .font(metrics.typography.rowTrailing)
+                                .foregroundStyle(.tertiary)
+                                .lineLimit(1)
+                                .fixedSize()
+                        }
+                        Text(result.isDirectory ? "Folder" : "File")
+                            .font(metrics.typography.rowTrailing)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
         }

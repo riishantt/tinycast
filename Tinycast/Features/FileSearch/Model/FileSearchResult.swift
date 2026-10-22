@@ -8,6 +8,7 @@ struct FileSearchResult: Identifiable, Equatable, Sendable {
     /// The enclosing folder's own name, which is what tells two same-named folders apart.
     let parentName: String
     let isDirectory: Bool
+    let modified: Date?
 
     var favoriteKey: String {
         URL(filePath: id, directoryHint: isDirectory ? .isDirectory : .notDirectory).absoluteString
@@ -17,11 +18,11 @@ struct FileSearchResult: Identifiable, Equatable, Sendable {
         guard favoriteKey.hasPrefix("file:///"), let url = URL(string: favoriteKey),
             url.query == nil, url.fragment == nil
         else { return nil }
-        self.init(url: url, isDirectory: url.hasDirectoryPath, homeDirectory: homeDirectory)
+        self.init(url: url, isDirectory: url.hasDirectoryPath, mtime: 0, homeDirectory: homeDirectory)
     }
 
     /// `url` is taken as given: index paths are already real, and standardizing one costs a stat.
-    init(url: URL, isDirectory: Bool, homeDirectory: URL) {
+    init(url: URL, isDirectory: Bool, mtime: UInt32, homeDirectory: URL) {
         let parent = url.deletingLastPathComponent()
         self.id = url.path
         self.url = url
@@ -30,6 +31,8 @@ struct FileSearchResult: Identifiable, Equatable, Sendable {
             parent.path, homePath: homeDirectory.path)
         self.parentName = parent.lastPathComponent
         self.isDirectory = isDirectory
+        // The index stores 0 for a crawl root, whose date it never read.
+        self.modified = mtime == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(mtime))
     }
 
     private static func abbreviate(_ path: String, homePath: String) -> String {
