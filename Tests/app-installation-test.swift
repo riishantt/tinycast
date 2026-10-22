@@ -170,9 +170,10 @@ struct AppInstallationTest {
             id: root.appending(path: "Fixture.app").path, name: "Fixture",
             url: root.appending(path: "Fixture.app"), bundleID: "com.example.fixture", kind: .application)
         let folder = FileSearchResult(
-            url: root.appending(path: "Projects"), isDirectory: true, homeDirectory: root)
+            url: root.appending(path: "Projects"), isDirectory: true, mtime: 0, homeDirectory: root)
         let file = FileSearchResult(
-            url: root.appending(path: "Résumé #1? 100%.txt"), isDirectory: false, homeDirectory: root)
+            url: root.appending(path: "Résumé #1? 100%.txt"), isDirectory: false, mtime: 0,
+            homeDirectory: root)
         store.toggle(folder)
         store.toggle(app)
         store.toggle(file)
