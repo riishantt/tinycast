@@ -10,6 +10,9 @@ struct EmojiGridSection: Identifiable {
 }
 
 enum EmojiGrid {
+    /// The leading cells ⌘1…⌘9 paste; ⌘0 stays Actual Size.
+    static let slotCount = 9
+
     /// Ranked results while searching, otherwise pinned, frequent and catalog sections in order.
     @MainActor
     static func sections(
@@ -242,6 +245,7 @@ private struct EmojiGridRowView: View {
                         glyph: row[column].display(tone: tone),
                         selected: row.start + column == selection,
                         hovered: column == hoveredColumn,
+                        slot: slot(at: row.start + column),
                         size: cellSize
                     )
                 } else {
@@ -279,6 +283,12 @@ private struct EmojiGridRowView: View {
         .onChange(of: palette.hoverDisarmToken) { hoveredColumn = nil }
     }
 
+    /// Checks the index first, so only the leading row observes ⌘ being held.
+    private func slot(at index: Int) -> Character? {
+        guard index < EmojiGrid.slotCount, palette.commandHeld else { return nil }
+        return FavoriteSlots.digit(at: index)
+    }
+
     /// Point → column, rejecting the gap between cells and empty slots in a partial row.
     private func column(at point: CGPoint) -> Int? {
         guard point.x >= 0 else { return nil }
@@ -296,6 +306,8 @@ private struct EmojiCell: View {
     let glyph: String
     let selected: Bool
     let hovered: Bool
+    /// This cell's ⌘-digit, shown only while ⌘ is held.
+    let slot: Character?
     let size: CGFloat
 
     private var fill: Color {
@@ -333,6 +345,11 @@ private struct EmojiCell: View {
                         .strokeBorder(Theme.Colors.emojiInnerBorder, lineWidth: 1)
                 }
                 .transition(.opacity)
+            }
+            if let slot {
+                KeyCapChip(text: String(slot), scale: .compact)
+                    .padding(metrics.spacing.xs)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             }
         }
         .frame(width: size, height: size)

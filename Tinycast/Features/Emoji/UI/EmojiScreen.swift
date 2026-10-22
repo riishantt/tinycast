@@ -76,9 +76,18 @@ struct EmojiScreen: PaletteScreen {
     }
 
     func perform(_ shortcut: PaletteShortcut, at selection: Int) -> Bool {
-        guard shortcut == .pin, let entry = entry(at: selection) else { return false }
-        togglePin(entry)
-        return true
+        switch shortcut {
+        case .pin:
+            guard let entry = entry(at: selection) else { return false }
+            togglePin(entry)
+            return true
+        case .favoriteSlot(let index):
+            guard index < EmojiGrid.slotCount, let entry = entry(at: index) else { return false }
+            core.emojiCoordinator.pasteEmoji(entry)
+            return true
+        default:
+            return false
+        }
     }
 
     /// ⌥⌘↑/↓ on the selected cell, when it is pinned.
