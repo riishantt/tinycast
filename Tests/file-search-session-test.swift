@@ -26,7 +26,10 @@ actor FileSearchProbe {
         }
         active -= 1
         let home = URL(fileURLWithPath: "/Users/test")
-        return [FileSearchResult(url: home.appending(path: query), isDirectory: false, homeDirectory: home)]
+        return [
+            FileSearchResult(
+                url: home.appending(path: query), isDirectory: false, mtime: 0, homeDirectory: home)
+        ]
     }
 
     func snapshot() -> (calls: [String], maximumActive: Int) {

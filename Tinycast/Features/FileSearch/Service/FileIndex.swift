@@ -121,7 +121,7 @@ final class FileIndex: Sendable {
         var ranked = base.map { hit in
             Ranked(
                 score: hit.score, path: snapshot.path(of: hit.index),
-                isDirectory: snapshot.isDirectory(hit.index))
+                isDirectory: snapshot.isDirectory(hit.index), mtime: snapshot.mtime[hit.index])
         }
         var types = TypeFilter(filter: filter)
         for (path, entry) in state.added where entry.mask & query.mask == query.mask {
@@ -135,7 +135,8 @@ final class FileIndex: Sendable {
                 return score
             }
             guard let score else { continue }
-            ranked.append(Ranked(score: score, path: path, isDirectory: entry.isDirectory))
+            ranked.append(
+                Ranked(score: score, path: path, isDirectory: entry.isDirectory, mtime: entry.mtime))
         }
         return Self.results(ranked, limit: limit, policy: policy)
     }
@@ -154,13 +155,16 @@ final class FileIndex: Sendable {
             }
         }
         var ranked = base.map { hit in
-            Ranked(score: hit.score, path: snapshot.path(of: hit.index), isDirectory: false)
+            Ranked(
+                score: hit.score, path: snapshot.path(of: hit.index), isDirectory: false,
+                mtime: snapshot.mtime[hit.index])
         }
         var types = TypeFilter(filter: filter)
         for (path, entry) in state.added where entry.isRecent {
             var name = entry.name
             guard name.withUTF8({ types.accepts(name: $0, isDirectory: false) }) else { continue }
-            ranked.append(Ranked(score: Int(entry.mtime), path: path, isDirectory: false))
+            ranked.append(
+                Ranked(score: Int(entry.mtime), path: path, isDirectory: false, mtime: entry.mtime))
         }
         return Self.results(ranked, limit: limit, policy: policy)
     }
@@ -169,6 +173,7 @@ final class FileIndex: Sendable {
         let score: Int
         let path: String
         let isDirectory: Bool
+        let mtime: UInt32
     }
 
     private static func results(
@@ -183,7 +188,7 @@ final class FileIndex: Sendable {
         .map { hit in
             FileSearchResult(
                 url: URL(filePath: hit.path, directoryHint: hit.isDirectory ? .isDirectory : .notDirectory),
-                isDirectory: hit.isDirectory, homeDirectory: policy.homeDirectory)
+                isDirectory: hit.isDirectory, mtime: hit.mtime, homeDirectory: policy.homeDirectory)
         }
     }
 

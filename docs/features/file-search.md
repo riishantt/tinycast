@@ -288,7 +288,8 @@ favorites remain searchable by filename at any query length with **Show in launc
 favorites lead indexed file hits in the Files section, with repeated paths removed and the same
 five-row cap. Disabling File Search hides file favorites without deleting them. It is
 `LauncherScreen.Row.file`, id-prefixed `file-` because an application's entry id is its bundle path. It
-draws `FileSearchRow` with its location — name, dimmed parent path, then File or Folder — and answers
+draws `FileSearchRow` with its location — name, dimmed parent path, then the modified date and File or
+Folder — and answers
 the screen's own row actions: ↵ opens, ⌘↵ reveals, the copy, paste and trash chords run
 `FileSearchActionsMenu.perform`, and a row drags out as a copy. Row icons come from the same transient
 fitted cache, purged when the palette hides.
