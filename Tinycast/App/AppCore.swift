@@ -216,6 +216,8 @@ final class AppCore {
         settings: settings, appIndex: appIndex, session: windowSwitch, palette: palette,
         paletteCoordinator: paletteCoordinator, core: self)
     @ObservationIgnored private(set) lazy var cameraCoordinator = CameraCoordinator(core: self)
+    @ObservationIgnored private(set) lazy var imageViewerCoordinator = ImageViewerCoordinator(
+        core: self)
     @ObservationIgnored private(set) lazy var dictionaryCoordinator = DictionaryCoordinator(
         paletteCoordinator: paletteCoordinator)
     @ObservationIgnored private(set) lazy var updateCoordinator = UpdateCoordinator(
@@ -507,6 +509,11 @@ final class AppCore {
         }
         if deepLinkCoordinator.handles(url) {
             deepLinkCoordinator.open(url)
+            return
+        }
+        // Info.plist claims only images, so a file Launch Services hands over is a photo to show.
+        if url.isFileURL {
+            imageViewerCoordinator.open(url)
             return
         }
         guard ExtensionDeepLink.claims(url) else { return }
