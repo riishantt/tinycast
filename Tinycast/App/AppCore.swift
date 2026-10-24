@@ -215,6 +215,8 @@ final class AppCore {
         settings: settings, appIndex: appIndex, session: windowSwitch, palette: palette,
         paletteCoordinator: paletteCoordinator, core: self)
     @ObservationIgnored private(set) lazy var cameraCoordinator = CameraCoordinator(core: self)
+    @ObservationIgnored private(set) lazy var imageViewerCoordinator = ImageViewerCoordinator(
+        core: self)
     @ObservationIgnored private(set) lazy var dictionaryCoordinator = DictionaryCoordinator(
         paletteCoordinator: paletteCoordinator)
     @ObservationIgnored private(set) lazy var updateCoordinator = UpdateCoordinator(
@@ -480,6 +482,11 @@ final class AppCore {
     }
 
     func handleOpenURL(_ url: URL) {
+        // Info.plist claims only images, so a file Launch Services hands over is a photo to show.
+        if url.isFileURL {
+            imageViewerCoordinator.open(url)
+            return
+        }
         guard ExtensionDeepLink.claims(url) else { return }
         guard let route = ExtensionDeepLink.route(url: url) else {
             paletteCoordinator.showPalette(mode: .launcher, restoreAnyMode: true)
