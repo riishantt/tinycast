@@ -137,6 +137,7 @@ run AppNameTests           Tinycast/Platform/AppDisplayName.swift \
                            Tinycast/Platform/BundleLocalization.swift \
                            $L/SearchRelevance.swift
 run FavoritesTests         $L/FavoriteSlots.swift
+run ImageViewerTests       Tinycast/Features/ImageViewer/Model/*.swift
 run AppInstallationTests   $L/SearchRelevance.swift $L/ScriptRomanization.swift \
                            $L/LauncherMatch.swift $L/EntryNaming.swift $L/LauncherOrder.swift \
                            $L/LauncherRankingStore.swift $L/LauncherSuggestions.swift $L/SearchScopes.swift \
