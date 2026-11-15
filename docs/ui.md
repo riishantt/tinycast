@@ -224,7 +224,7 @@ shipped. Light is the same stop with the ink inverted, and is the only column op
 
 | Token             | Dark           | Light          | Use                                               |
 | ----------------- | -------------- | -------------- | ------------------------------------------------- |
-| `panelScrim`      | black **0.40** | white **0.55** | the panel scrim over the glass                    |
+| `panelScrim`      | clear          | clear          | the panel scrim over the glass, off in this fork  |
 | `selection`       | white 0.10     | black 0.09     | selected row fill (keyboard/active selection)     |
 | `rowHover`        | white 0.05     | black 0.045    | mouse-hover fill (always fainter than selection)  |
 | `menuHover`       | white 0.10     | black 0.09     | popover-menu row hover                            |
@@ -243,9 +243,9 @@ shipped. Light is the same stop with the ink inverted, and is the only column op
 | `dropGuide`       | white 0.35     | black 0.35     | the palette's drop guides while dragging          |
 | `composerSend`    | white 0.92     | black 0.92     | AI Chat's Send disc                               |
 
-`panelScrim` is the ramp's inverse (it darkens the dark surface and lightens the light one), so it
-is an `adaptive` pair, not a `ramp`. So is `composerSendInk`, black 0.85 on the dark disc and white
-on the light one.
+`panelScrim` is `Color.clear` in this fork, so the glass shows undimmed in both appearances.
+`composerSendInk` is an `adaptive` pair, not a `ramp`: black 0.85 on the dark disc and white on the
+light one.
 `brand`, `primaryAction`, `destructive`, `success` and `dropGuideArmed` are fixed hues and adapt on
 their own.
 `Theme.Colors.Syntax` holds the code-colouring palette AI Chat paints into a fenced block: `keyword`,

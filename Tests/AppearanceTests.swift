@@ -45,7 +45,6 @@ struct AppearanceTests {
         let c = Theme.Colors.self
 
         print("# dark branches are the shipped literals")
-        dark("panelScrim", c.panelScrim, is: Color.black.opacity(0.4))
         dark("dialogDimming", c.dialogDimming, is: Color.black.opacity(0.34))
         dark("tooltipShadow", c.tooltipShadow, is: Color.black.opacity(0.18))
         dark("selection", c.selection, is: Color.white.opacity(0.10))
@@ -71,7 +70,7 @@ struct AppearanceTests {
 
         print("# every surface token resolves per appearance")
         for (label, token) in [
-            ("panelScrim", c.panelScrim), ("selection", c.selection), ("rowHover", c.rowHover),
+            ("selection", c.selection), ("rowHover", c.rowHover),
             ("menuHover", c.menuHover), ("separator", c.separator),
             ("controlSurface", c.controlSurface), ("border", c.border),
             ("textPrimary", c.textPrimary), ("textSecondary", c.textSecondary),
@@ -82,9 +81,9 @@ struct AppearanceTests {
             adapts(label, token)
         }
 
-        print("# the scrim inverts rather than ramping: it lightens the light surface")
-        check("light scrim is white", components(c.panelScrim, .aqua)[0] == 255)
-        check("dark scrim is black", components(c.panelScrim, .darkAqua)[0] == 0)
+        print("# the panel scrim stays off, so the glass shows undimmed")
+        check("light scrim is clear", components(c.panelScrim, .aqua)[3] == 0)
+        check("dark scrim is clear", components(c.panelScrim, .darkAqua)[3] == 0)
 
         print("# .system hands the choice back to AppKit")
         check("system is nil", AppAppearance.system.nsAppearance == nil)
