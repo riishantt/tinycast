@@ -50,7 +50,6 @@
 				<string>public.image</string>
 			</array>
 		</dict>
-		<!-- Never a supertype a PDF conforms to: PDFs stay with the browser. -->
 		<dict>
 			<key>CFBundleTypeName</key>
 			<string>Document</string>
@@ -60,6 +59,7 @@
 			<string>Alternate</string>
 			<key>LSItemContentTypes</key>
 			<array>
+				<string>com.adobe.pdf</string>
 				<string>public.text</string>
 				<string>com.apple.rtfd</string>
 				<string>com.apple.webarchive</string>

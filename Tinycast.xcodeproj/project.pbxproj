@@ -916,6 +916,7 @@
 		F44DA0C81285A90138E13A7B /* ChatGPTSubscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E5D47E198B86901D75515 /* ChatGPTSubscription.swift */; };
 		F46DE2571A85FA24BD4E3B3A /* WindowSwitchEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479047BCB47CE279EB1D256D /* WindowSwitchEntry.swift */; };
 		F4A75F90028F57D6DC1EF7DB /* ASCIIKeyboardLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D1CA733FFAEF665D867A45 /* ASCIIKeyboardLayout.swift */; };
+		F4F5A670FC1E505CD1AFBE44 /* FileViewerPDFSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB80F1FAC327CFE88B633F16 /* FileViewerPDFSurface.swift */; };
 		F51785CF5A6EC0B87D6802C9 /* ExtensionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCBDD92DEAD780A1DC423CA /* ExtensionScreen.swift */; };
 		F5CC30A7FD6D8F11187D631B /* ExtensionPickerList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1FC5C77AA5F4DD6E2D9B4D /* ExtensionPickerList.swift */; };
 		F5EAF69E070FF2E63CDA5FB2 /* NoteInlineScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECE4D3633895F0E27FE3252D /* NoteInlineScanner.swift */; };
@@ -1791,6 +1792,7 @@
 		CA9287418DC6C04437FB4BAF /* ColorValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorValue.swift; sourceTree = "<group>"; };
 		CA97F3257C2FA99BF185ED8A /* CalcOperator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalcOperator.swift; sourceTree = "<group>"; };
 		CAAAAB96B2F3061C9CC50978 /* CalcHolidays.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalcHolidays.swift; sourceTree = "<group>"; };
+		CB80F1FAC327CFE88B633F16 /* FileViewerPDFSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileViewerPDFSurface.swift; sourceTree = "<group>"; };
 		CBD80BC6110C36450C2FF751 /* ExtensionPickerItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionPickerItem.swift; sourceTree = "<group>"; };
 		CBF1D8549E1D5F1619255852 /* FileSearchPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchPreview.swift; sourceTree = "<group>"; };
 		CBFF39C46E98D0808B188E2E /* FileSearchIgnoreList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchIgnoreList.swift; sourceTree = "<group>"; };
@@ -4183,6 +4185,7 @@
 				39CED4F4803A49905233C185 /* FileViewerCoordinator.swift */,
 				F1B94E77FC6DFA2F3326AD4D /* FileViewerDocumentSurface.swift */,
 				D38561394F033FB53D7EC18F /* FileViewerPanel.swift */,
+				CB80F1FAC327CFE88B633F16 /* FileViewerPDFSurface.swift */,
 				A89FD022946E2830D241FA33 /* FileViewerSurface.swift */,
 				8E365A840448EDAA5F2AB259 /* FileViewerTextSurface.swift */,
 				636729B5FC40C189EB7A2B7E /* FileViewerView.swift */,
@@ -4886,6 +4889,7 @@
 				5CCBEBEB1C4D75743C1D6AF5 /* FileViewerDocumentShape.swift in Sources */,
 				F6DF44135D15B110F825B9C4 /* FileViewerDocumentSurface.swift in Sources */,
 				EA1D066236F4558986C6E10B /* FileViewerKind.swift in Sources */,
+				F4F5A670FC1E505CD1AFBE44 /* FileViewerPDFSurface.swift in Sources */,
 				27E49063F48DE8586E2D7D72 /* FileViewerPanel.swift in Sources */,
 				3888C04E2B13DE5E77E4158F /* FileViewerSurface.swift in Sources */,
 				EBE253BD0FE4B8C4502C4458 /* FileViewerTextSurface.swift in Sources */,

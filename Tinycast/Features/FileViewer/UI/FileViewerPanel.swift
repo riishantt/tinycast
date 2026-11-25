@@ -14,6 +14,7 @@ final class FileViewerPanel: NSPanel, AnimatedPanel {
     }
 
     var onCommand: ((Command) -> Void)?
+    var takesTyping = false
 
     init() {
         super.init(
@@ -36,11 +37,17 @@ final class FileViewerPanel: NSPanel, AnimatedPanel {
     }
 
     override func sendEvent(_ event: NSEvent) {
-        guard event.type == .keyDown, let onCommand, let command = Self.command(for: event) else {
+        guard event.type == .keyDown, let onCommand, !isTyping(event),
+            let command = Self.command(for: event)
+        else {
             super.sendEvent(event)
             return
         }
         onCommand(command)
+    }
+
+    private func isTyping(_ event: NSEvent) -> Bool {
+        takesTyping && event.keyCode != kVK_Escape && !event.modifierFlags.contains(.command)
     }
 
     /// As the palette does: a click on another app or the desktop takes key, and that closes it.

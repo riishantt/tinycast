@@ -1,9 +1,10 @@
 import Foundation
 import UniformTypeIdentifiers
 
-/// What draws a file: the photo canvas, the text view, or Quick Look for anything richer.
+/// What draws a file: the photo canvas, WebKit, the text view, or Quick Look for anything richer.
 enum FileViewerKind: Equatable, Sendable {
     case photo
+    case pdf
     case text
     case document
 
@@ -20,6 +21,8 @@ enum FileViewerKind: Equatable, Sendable {
         if let type, type.conforms(to: .image) {
             // ImageIO reads no SVG.
             self = type.conforms(to: .svg) ? .document : .photo
+        } else if let type, type.conforms(to: .pdf) {
+            self = .pdf
         } else if let type, Self.drawnTypes.contains(where: type.conforms) {
             self = .document
         } else if let bytes, FileSearchPreviewKind.isText(bytes, isWholeFile: true) {

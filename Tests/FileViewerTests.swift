@@ -140,11 +140,21 @@ struct FileViewerTests {
         let slides = FileViewerDocumentShape.slides.windowSize(visible: screen)
         check("slides open widescreen", abs(slides.width / slides.height - 16 / 9) < 0.01)
 
-        // Claiming a supertype of PDF in Info.plist would offer Tinycast for every PDF.
+        check("a PDF goes to WebKit", kind("pdf", source) == .pdf)
+        check(
+            "a portrait PDF is a page",
+            FileViewerDocumentShape(firstPage: CGSize(width: 595, height: 842)) == .page)
+        check(
+            "a landscape PDF is slides",
+            FileViewerDocumentShape(firstPage: CGSize(width: 960, height: 540)) == .slides)
+
+        // Claiming a type an archive or app conforms to would offer Tinycast for every file.
         let claimed = claimedTypes()
         check("Info.plist claims document types", claimed.count > 1)
-        check("no claimed type takes PDFs", !claimed.contains { UTType.pdf.conforms(to: $0) })
-        for pathExtension in ["docx", "doc", "rtf", "odt", "xlsx", "xls", "csv", "pptx", "ppt", "txt", "md"] {
+        check("no claimed type takes archives", !claimed.contains { UTType.zip.conforms(to: $0) })
+        for pathExtension in [
+            "pdf", "docx", "doc", "rtf", "odt", "xlsx", "xls", "csv", "pptx", "ppt", "txt", "md"
+        ] {
             let type = UTType(filenameExtension: pathExtension) ?? .data
             check("Info.plist claims .\(pathExtension)", claimed.contains { type.conforms(to: $0) })
         }

@@ -17,6 +17,10 @@ enum FileViewerDocumentShape: Equatable, Sendable {
         }
     }
 
+    init(firstPage: CGSize) {
+        self = firstPage.width > firstPage.height ? .slides : .page
+    }
+
     func windowSize(visible: CGSize) -> CGSize {
         let share = ImageViewerFitPolicy.screenShare
         let bounds = CGSize(width: visible.width * share, height: visible.height * share)

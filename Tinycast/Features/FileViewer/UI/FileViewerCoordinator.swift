@@ -56,6 +56,7 @@ final class FileViewerCoordinator {
         let hosting = NSHostingView(rootView: FileViewerView(surface: next))
         hosting.sizingOptions = []
         panel.contentView = hosting
+        panel.takesTyping = next.takesTyping
         replaced?.close()
         surface = next
         shown = url
@@ -74,6 +75,9 @@ final class FileViewerCoordinator {
             let canvas = ImageViewerCanvas()
             canvas.show(photo, named: name, in: size)
             return (canvas, size)
+        case .pdf(let shape, let isLocked):
+            let size = shape.windowSize(visible: visible)
+            return (FileViewerPDFSurface(url: url, isLocked: isLocked, size: size), size)
         case .text(let text):
             let size = FileViewerDocumentShape.page.windowSize(visible: visible)
             return (FileViewerTextSurface(text: text, named: name, size: size), size)

@@ -9,12 +9,12 @@ pointer and offers only the basics: zoom, Open in another app, and Move to Trash
 - **Tinycast is an `Alternate` handler, never the default by itself.** `Info.plist` claims its types
   with `LSHandlerRank` `Alternate`, so it appears under Open With and the user makes it the default
   (Get Info › Open With › Change All). Installing a build changes no one's default viewer.
-- **PDFs are never claimed.** They stay with the browser, so `Info.plist` may not claim a type a PDF
-  conforms to (`public.data`, `public.content`, `public.composite-content`). `FileViewerTests` checks.
+- **`Info.plist` names types, never `public.data` or `public.content`**, which would offer Tinycast for
+  archives and everything else it cannot show. `FileViewerTests` checks.
 - **Every file URL Launch Services hands over is a file to show.** `AppCore.handleOpenURL` sends a file
   URL to `FileViewerCoordinator.open` before any deep-link routing, which is only safe while
   `Info.plist` claims nothing but viewable files.
-- **`FileViewerKind` decides what draws a file.** An image is a photo; RTF, HTML, CSV, a contact card
+- **`FileViewerKind` decides what draws a file.** An image is a photo; a PDF is WebKit's; RTF, HTML, CSV, a contact card
   and a calendar event are drawn by Quick Look; anything else whose bytes are UTF-8 is text, whatever
   its extension; the rest is Quick Look's. Text over 8 MB goes to Quick Look, which reads only as much
   as it draws.
@@ -23,7 +23,13 @@ pointer and offers only the basics: zoom, Open in another app, and Move to Trash
   with a 320×220pt floor so an icon still gets a window. Actual size is points at the photo's own DPI,
   so a 144-DPI Retina screenshot is half its pixels, as in Preview.
 - **A document's window takes the shape its kind usually has.** Quick Look reports no page size, so
-  `FileViewerDocumentShape` picks: a tall page, a wider sheet, or a 16:9 slide.
+  `FileViewerDocumentShape` picks: a tall page, a wider sheet, or a 16:9 slide. A PDF's first page
+  picks for it.
+- **PDFs draw in WebKit, not PDFKit.** A `PDFView` runs Vision's text recognition on every page inside
+  Tinycast and keeps its models, 70–140 MB with no switch to turn it off; WebKit draws in a process that
+  exits with the view. JavaScript is off, nothing persists, and a link opens in the browser.
+- **A locked PDF gets every bare key but Esc.** WebKit asks for the password inside the page, so
+  `takesTyping` has `FileViewerPanel` leave Space, `=` and `-` to it.
 - **Decoding is off main and bounded by the display.** `ImageViewerPhoto` decodes with ImageIO, inside
   `FileViewerContent`'s `Task.detached`, applying EXIF orientation, at no more than twice the display's
   long edge in pixels. That keeps a 48 MP photo from costing ~190 MB; past a 2× zoom of a full-screen
@@ -43,7 +49,7 @@ pointer and offers only the basics: zoom, Open in another app, and Move to Trash
 
 | Piece | Holds |
 | --- | --- |
-| `Model/FileViewerKind.swift` | photo, text or document, from the type and the bytes |
+| `Model/FileViewerKind.swift` | photo, PDF, text or document, from the type and the bytes |
 | `Model/FileViewerDocumentShape.swift` | the window size for a page, a sheet or slides |
 | `Model/ImageViewerFitPolicy.swift` | a photo's window size, point size, zoom steps, decode size |
 | `Service/FileViewerContent.swift` | the off-main read that makes a file ready to show |
@@ -52,6 +58,7 @@ pointer and offers only the basics: zoom, Open in another app, and Move to Trash
 | `UI/FileViewerPanel.swift` | the borderless key panel: the chords and close-on-resign-key |
 | `UI/FileViewerSurface.swift` | what the panel hosts, and what its zoom chords do to it |
 | `UI/ImageViewerCanvas.swift` | photos: the magnifying `NSScrollView`, double-click, drag to pan |
+| `UI/FileViewerPDFSurface.swift` | PDFs: a `WKWebView` at the window's width |
 | `UI/FileViewerTextSurface.swift` | text and source: a selectable text view whose zoom is its type size |
 | `UI/FileViewerDocumentSurface.swift` | everything else: `QLPreviewView`, widened and zoomed |
 | `UI/FileViewerView.swift` | the palette's glass behind the surface |
