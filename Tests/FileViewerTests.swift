@@ -1,8 +1,9 @@
 import CoreGraphics
 import Foundation
+import UniformTypeIdentifiers
 
 @main
-struct ImageViewerTests {
+struct FileViewerTests {
     static func main() {
         var failures = 0
 
@@ -101,7 +102,63 @@ struct ImageViewerTests {
                 pixels: CGSize(width: 12000, height: 9000),
                 screenPixels: CGSize(width: 3024, height: 1964)) == 6048)
 
+        func kind(_ pathExtension: String, _ bytes: Data? = nil) -> FileViewerKind {
+            FileViewerKind(type: UTType(filenameExtension: pathExtension), bytes: bytes)
+        }
+        let source = Data("let x = 1\n".utf8)
+        let zipped = Data([0x50, 0x4B, 0x03, 0x04, 0x00])
+        check("a photo goes to the canvas", kind("heic") == .photo)
+        check("an SVG goes to Quick Look, as ImageIO reads none", kind("svg", source) == .document)
+        check("plain text reads as text", kind("txt", source) == .text)
+        check("an empty text file reads as text", kind("txt", Data()) == .text)
+        check("source reads as text", kind("swift", source) == .text)
+        check("text of an undeclared type reads as text", kind("ipynb", source) == .text)
+        check("text with no type reads as text", FileViewerKind(type: nil, bytes: source) == .text)
+        check("text too large to hold goes to Quick Look", kind("log") == .document)
+        check("a Word file goes to Quick Look", kind("docx", zipped) == .document)
+        check("a UTF-16 file goes to Quick Look", kind("txt", Data([0xFF, 0xFE, 0x61, 0x00])) == .document)
+        for drawn in ["rtf", "html", "csv", "vcf", "ics"] {
+            check("a .\(drawn) is drawn, not shown as source", kind(drawn, source) == .document)
+        }
+
+        func shape(_ pathExtension: String) -> FileViewerDocumentShape {
+            FileViewerDocumentShape(type: UTType(filenameExtension: pathExtension))
+        }
+        check("a Word file is a page", shape("docx") == .page)
+        check("an Excel file is a sheet", shape("xlsx") == .sheet)
+        check("a CSV is a sheet", shape("csv") == .sheet)
+        check("a PowerPoint file is slides", shape("pptx") == .slides)
+        for shape in [FileViewerDocumentShape.page, .sheet, .slides] {
+            for visible in [screen, CGSize(width: 640, height: 400), CGSize(width: 900, height: 1600)] {
+                let size = shape.windowSize(visible: visible)
+                check(
+                    "a \(shape) window stays inside \(Int(visible.width))pt",
+                    size.width <= (visible.width * ImageViewerFitPolicy.screenShare).rounded()
+                        && size.height <= (visible.height * ImageViewerFitPolicy.screenShare).rounded())
+            }
+        }
+        let slides = FileViewerDocumentShape.slides.windowSize(visible: screen)
+        check("slides open widescreen", abs(slides.width / slides.height - 16 / 9) < 0.01)
+
+        // Claiming a supertype of PDF in Info.plist would offer Tinycast for every PDF.
+        let claimed = claimedTypes()
+        check("Info.plist claims document types", claimed.count > 1)
+        check("no claimed type takes PDFs", !claimed.contains { UTType.pdf.conforms(to: $0) })
+        for pathExtension in ["docx", "doc", "rtf", "odt", "xlsx", "xls", "csv", "pptx", "ppt", "txt", "md"] {
+            let type = UTType(filenameExtension: pathExtension) ?? .data
+            check("Info.plist claims .\(pathExtension)", claimed.contains { type.conforms(to: $0) })
+        }
+
         print(failures == 0 ? "all passed" : "\(failures) failed")
         if failures > 0 { exit(1) }
+    }
+
+    private static func claimedTypes() -> [UTType] {
+        guard let data = FileManager.default.contents(atPath: "Tinycast/Info.plist"),
+            let plist = try? PropertyListSerialization.propertyList(from: data, format: nil)
+                as? [String: Any],
+            let claims = plist["CFBundleDocumentTypes"] as? [[String: Any]]
+        else { return [] }
+        return claims.flatMap { $0["LSItemContentTypes"] as? [String] ?? [] }.compactMap { UTType($0) }
     }
 }

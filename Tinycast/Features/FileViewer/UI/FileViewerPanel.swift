@@ -2,21 +2,22 @@ import AppKit
 import Carbon.HIToolbox
 
 /// The viewer's panel; keys go through `sendEvent`, so no subview has to hold focus for them.
-final class ImageViewerPanel: NSPanel, AnimatedPanel {
+final class FileViewerPanel: NSPanel, AnimatedPanel {
     enum Command {
         case close
         case zoomIn
         case zoomOut
         case actualSize
         case fit
+        case openElsewhere
         case trash
     }
 
     var onCommand: ((Command) -> Void)?
 
-    init(content: NSView) {
+    init() {
         super.init(
-            contentRect: NSRect(origin: .zero, size: content.frame.size),
+            contentRect: .zero,
             styleMask: [.borderless, .fullSizeContentView, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -32,7 +33,6 @@ final class ImageViewerPanel: NSPanel, AnimatedPanel {
         followMotion()
         isReleasedWhenClosed = false
         isRestorable = false
-        contentView = content
     }
 
     override func sendEvent(_ event: NSEvent) {
@@ -59,6 +59,7 @@ final class ImageViewerPanel: NSPanel, AnimatedPanel {
         }
         switch event.charactersIgnoringModifiers {
         case "w" where isCommand: return .close
+        case "o" where isCommand: return .openElsewhere
         case "=", "+": return .zoomIn
         case "-": return .zoomOut
         case "0" where isCommand: return .actualSize

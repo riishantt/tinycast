@@ -1,7 +1,7 @@
 import AppKit
 
 /// The photo in a magnifying scroll view: AppKit pinches and scrolls, the zoom steps live here.
-final class ImageViewerCanvas: NSScrollView {
+final class ImageViewerCanvas: NSScrollView, FileViewerSurface {
     private let imageView = PhotoView()
     private var fit: CGFloat = 1
 
@@ -32,6 +32,8 @@ final class ImageViewerCanvas: NSScrollView {
         maxMagnification = ImageViewerFitPolicy.maximum(fit: fit)
         magnification = fit
     }
+
+    func close() {}
 
     func zoomIn() {
         zoom(to: ImageViewerFitPolicy.zoomedIn(magnification, fit: fit))

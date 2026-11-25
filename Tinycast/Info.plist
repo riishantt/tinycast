@@ -50,6 +50,39 @@
 				<string>public.image</string>
 			</array>
 		</dict>
+		<!-- Never a supertype a PDF conforms to: PDFs stay with the browser. -->
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.text</string>
+				<string>com.apple.rtfd</string>
+				<string>com.apple.webarchive</string>
+				<string>com.microsoft.word.doc</string>
+				<string>org.openxmlformats.wordprocessingml.document</string>
+				<string>org.openxmlformats.wordprocessingml.document.macroenabled</string>
+				<string>org.openxmlformats.wordprocessingml.template</string>
+				<string>org.oasis-open.opendocument.text</string>
+				<string>com.microsoft.excel.xls</string>
+				<string>org.openxmlformats.spreadsheetml.sheet</string>
+				<string>org.openxmlformats.spreadsheetml.sheet.macroenabled</string>
+				<string>com.microsoft.powerpoint.ppt</string>
+				<string>org.openxmlformats.presentationml.presentation</string>
+				<string>org.openxmlformats.presentationml.presentation.macroenabled</string>
+				<string>org.openxmlformats.presentationml.slideshow</string>
+				<string>com.apple.iwork.pages.sffpages</string>
+				<string>com.apple.iwork.pages.pages</string>
+				<string>com.apple.iwork.numbers.sffnumbers</string>
+				<string>com.apple.iwork.numbers.numbers</string>
+				<string>com.apple.iwork.keynote.sffkey</string>
+				<string>com.apple.iwork.keynote.key</string>
+			</array>
+		</dict>
 	</array>
 	<!-- Exported, but deliberately never a document type: claiming the type would make a
 	     double-clicked .tinycast launch straight into writing over someone's data. The identifier

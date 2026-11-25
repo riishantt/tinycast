@@ -9,13 +9,7 @@ struct ImageViewerPhoto: @unchecked Sendable {
     /// In points at the photo's own DPI, which is what actual size means.
     let size: CGSize
 
-    static func load(_ url: URL, screenPixels: CGSize) async -> ImageViewerPhoto? {
-        await Task.detached(priority: .userInitiated) {
-            decode(url, screenPixels: screenPixels)
-        }.value
-    }
-
-    private static func decode(_ url: URL, screenPixels: CGSize) -> ImageViewerPhoto? {
+    static func decode(_ url: URL, screenPixels: CGSize) -> ImageViewerPhoto? {
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
             let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil)
                 as? [CFString: Any],
