@@ -2,7 +2,6 @@ import AppKit
 
 /// The photo in a magnifying scroll view: AppKit pinches and scrolls, the zoom steps live here.
 final class ImageViewerCanvas: NSScrollView, FileViewerSurface {
-    private let imageView = PhotoView()
     private var fit: CGFloat = 1
 
     init() {
@@ -15,18 +14,22 @@ final class ImageViewerCanvas: NSScrollView, FileViewerSurface {
         autohidesScrollers = true
         scrollerStyle = .overlay
         allowsMagnification = true
-        imageView.imageScaling = .scaleAxesIndependently
-        imageView.animates = true
-        documentView = imageView
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
     /// `bounds` is the window's content size, since the hosting view has yet to lay this view out.
     func show(_ photo: ImageViewerPhoto, named name: String, in bounds: CGSize) {
-        imageView.image = photo.image
-        imageView.frame = CGRect(origin: .zero, size: photo.size)
-        imageView.setAccessibilityLabel(name)
+        let photoView: NSView =
+            switch photo.pixels {
+            case .still(let surface): StillView(surface)
+            case .animated(let image): AnimatedView(image)
+            }
+        photoView.frame = CGRect(origin: .zero, size: photo.size)
+        photoView.setAccessibilityElement(true)
+        photoView.setAccessibilityRole(.image)
+        photoView.setAccessibilityLabel(name)
+        documentView = photoView
         fit = ImageViewerFitPolicy.fitMagnification(image: photo.size, in: bounds)
         minMagnification = fit
         maxMagnification = ImageViewerFitPolicy.maximum(fit: fit)
@@ -53,8 +56,8 @@ final class ImageViewerCanvas: NSScrollView, FileViewerSurface {
 
     /// At the fit there is nothing to pan, so a drag moves the window instead.
     override func mouseDown(with event: NSEvent) {
-        if event.clickCount == 2 {
-            let point = imageView.convert(event.locationInWindow, from: nil)
+        if event.clickCount == 2, let documentView {
+            let point = documentView.convert(event.locationInWindow, from: nil)
             setMagnification(ImageViewerFitPolicy.toggled(magnification, fit: fit), centeredAt: point)
         } else if !isZoomedPastFit {
             window?.performDrag(with: event)
@@ -79,8 +82,38 @@ final class ImageViewerCanvas: NSScrollView, FileViewerSurface {
     }
 }
 
+/// The decoded pixels as they are, scaled by the layer rather than drawn again at each zoom.
+private final class StillView: NSView {
+    private let surface: IOSurfaceRef
+
+    init(_ surface: IOSurfaceRef) {
+        self.surface = surface
+        super.init(frame: .zero)
+        wantsLayer = true
+        layerContentsRedrawPolicy = .onSetNeedsDisplay
+        layerContentsPlacement = .scaleAxesIndependently
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var wantsUpdateLayer: Bool { true }
+
+    override func updateLayer() {
+        layer?.contents = surface
+    }
+}
+
 /// Hands every click to the canvas, which owns the double-click zoom and the drag.
-private final class PhotoView: NSImageView {
+private final class AnimatedView: NSImageView {
+    init(_ image: NSImage) {
+        super.init(frame: .zero)
+        imageScaling = .scaleAxesIndependently
+        animates = true
+        self.image = image
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
     override func mouseDown(with event: NSEvent) {
         nextResponder?.mouseDown(with: event)
     }

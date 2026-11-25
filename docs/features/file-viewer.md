@@ -29,6 +29,9 @@ pointer and offers only the basics: zoom, Open in another app, and Move to Trash
   long edge in pixels. That keeps a 48 MP photo from costing ~190 MB; past a 2× zoom of a full-screen
   fit, it softens. Only a multi-frame GIF loads as an `NSImage` from the file, so `NSImageView` can
   animate it.
+- **A still photo reaches its layer as an `IOSurface`, never a `CGImage`.** On macOS 27 the pixels of a
+  `CGImage` a layer has shown are never freed, even once the layer, its window and the image are gone,
+  which cost a whole decoded photo on every open.
 - **Closing works as it does for the palette.** Esc, Space, ⌘W and losing key all close: a click on
   another app or the desktop takes key away. Everything goes through `FileViewerCoordinator.close()`,
   which drops the panel and, once it is off screen, closes the surface. `QLPreviewView` holds its
