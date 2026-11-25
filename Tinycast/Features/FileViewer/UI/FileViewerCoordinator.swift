@@ -109,9 +109,7 @@ final class FileViewerCoordinator {
     /// The viewer only reads, so this is the way on to an editor once Tinycast is the default.
     private func openElsewhere() {
         guard let url = shown else { return }
-        let own = Bundle.main.bundleIdentifier
-        let app = NSWorkspace.shared.urlsForApplications(toOpen: url)
-            .first { Bundle(url: $0)?.bundleIdentifier != own }
+        let app = (surface is FileViewerPDFSurface ? defaultBrowser : nil) ?? otherApp(for: url)
         close()
         guard let app else {
             reportUnopened(url)
@@ -125,6 +123,18 @@ final class FileViewerCoordinator {
                 reportUnopened(url)
             }
         }
+    }
+
+    private var defaultBrowser: URL? {
+        URL(string: "https://example.com").flatMap {
+            NSWorkspace.shared.urlForApplication(toOpen: $0)
+        }
+    }
+
+    private func otherApp(for url: URL) -> URL? {
+        let own = Bundle.main.bundleIdentifier
+        return NSWorkspace.shared.urlsForApplications(toOpen: url)
+            .first { Bundle(url: $0)?.bundleIdentifier != own }
     }
 
     private func reportUnopened(_ url: URL) {

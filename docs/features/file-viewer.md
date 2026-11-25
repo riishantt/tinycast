@@ -67,8 +67,9 @@ pointer and offers only the basics: zoom, Open in another app, and Move to Trash
 a double-click toggles between the fit and actual size; at the fit, a drag moves the window; once
 zoomed, it pans. On a document ⌘0 and ⌘9 are both the fit.
 
-⌘O closes the viewer and opens the file in the first other app that can, which is how a document
-Tinycast is the default for gets edited. Any build of Tinycast with this bundle identifier is skipped.
+⌘O closes the viewer and opens a PDF in the default browser, and anything else in the first other app
+that can, which is how a document Tinycast is the default for gets edited. Any build of Tinycast with
+this bundle identifier is skipped.
 
 ### Quick Look's views
 
